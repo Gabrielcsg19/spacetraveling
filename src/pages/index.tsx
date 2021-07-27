@@ -1,15 +1,14 @@
 import { GetStaticProps } from 'next';
-import { ReactElement } from 'react';
 import Prismic from '@prismicio/client';
-
-// import { RichText } from 'prismic-dom';
+import Link from 'next/link';
 import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
-import { Head } from 'next/document';
-import { getPrismicClient } from '../services/prismic';
+import Head from 'next/head';
+import { FiCalendar, FiUser } from 'react-icons/fi';
 
+import { getPrismicClient } from '../services/prismic';
 // import commonStyles from '../styles/common.module.scss';
-// import styles from './home.module.scss';
+import styles from './home.module.scss';
 
 interface Post {
   uid?: string;
@@ -37,15 +36,33 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
         <title>Posts | spacetraveling.</title>
       </Head>
 
-      <main>
-        <div>
-          <a href="/">
-            <strong>Título</strong>
-            <p>Subtítulo legal</p>
-            <time>15 Mar 2021</time>
-            <span>Gabriel SOuza</span>
-          </a>
+      <main className={styles.container}>
+        <img src="/images/logo.svg" alt="logo" />
+        <div className={styles.posts}>
+          {postsPagination.results.map(post => (
+            <Link href={`/post/${post.uid}`} key={post.uid}>
+              <a>
+                <h1>{post.data.title}</h1>
+                <p>{post.data.subtitle}.</p>
+                <div className={styles.info}>
+                  <time>
+                    <FiCalendar />
+                    {post.first_publication_date}
+                  </time>
+                  <span>
+                    <FiUser />
+                    {post.data.author}
+                  </span>
+                </div>
+              </a>
+            </Link>
+          ))}
         </div>
+        {postsPagination.next_page && (
+          <button className={styles.morePostsButton} type="button">
+            Carregar mais posts
+          </button>
+        )}
       </main>
     </>
   );
@@ -57,7 +74,7 @@ export const getStaticProps: GetStaticProps = async () => {
     [Prismic.predicates.at('document.type', 'posts')],
     {
       fetch: ['posts.title', 'posts.subtitle', 'posts.author'],
-      pageSize: 5,
+      pageSize: 1,
     }
   );
 
