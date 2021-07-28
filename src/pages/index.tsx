@@ -8,7 +8,7 @@ import { FiCalendar, FiUser } from 'react-icons/fi';
 
 import { useState } from 'react';
 import { getPrismicClient } from '../services/prismic';
-// import commonStyles from '../styles/common.module.scss';
+import commonStyles from '../styles/common.module.scss';
 import styles from './home.module.scss';
 
 interface Post {
@@ -62,7 +62,7 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
   return (
     <>
       <Head>
-        <title>Posts | spacetraveling.</title>
+        <title>Home | spacetraveling.</title>
       </Head>
 
       <main className={styles.container}>
@@ -72,11 +72,17 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
             <Link href={`/post/${post.uid}`} key={post.uid}>
               <a>
                 <h1>{post.data.title}</h1>
-                <p>{post.data.subtitle}.</p>
-                <div className={styles.info}>
+                <p>{post.data.subtitle}</p>
+                <div className={commonStyles.info}>
                   <time>
                     <FiCalendar />
-                    {post.first_publication_date}
+                    {format(
+                      new Date(post.first_publication_date),
+                      'dd MMM yyy',
+                      {
+                        locale: ptBR,
+                      }
+                    )}
                   </time>
                   <span>
                     <FiUser />
@@ -107,19 +113,13 @@ export const getStaticProps: GetStaticProps = async () => {
     [Prismic.predicates.at('document.type', 'posts')],
     {
       fetch: ['posts.title', 'posts.subtitle', 'posts.author'],
-      pageSize: 1,
+      pageSize: 20,
     }
   );
 
   const posts = postsResponse.results.map(post => ({
     uid: post.uid,
-    first_publication_date: format(
-      new Date(post.first_publication_date),
-      'dd MMM yyyy',
-      {
-        locale: ptBR,
-      }
-    ),
+    first_publication_date: post.first_publication_date,
     data: {
       title: post.data.title,
       subtitle: post.data.subtitle,

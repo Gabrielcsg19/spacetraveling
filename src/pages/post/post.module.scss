@@ -1,1 +1,30 @@
-// TODO
+.post {
+  max-width: 700px;
+  margin: 5rem auto 0;
+  text-align: justify;
+
+  h1 {
+    font-size: 3rem;
+    line-height: 3.5rem;
+    letter-spacing: -0.5px;
+    margin-bottom: 1.5rem;
+  }
+
+  .postContent {
+    margin-top: 4rem;
+
+    &:last-child {
+      margin-bottom: 5rem;
+    }
+
+    h2 {
+      font-size: 1.85rem;
+      margin-bottom: 2rem;
+    }
+
+    .body p {
+      margin-bottom: 1rem;
+      line-height: 1.5rem;
+    }
+  }
+}

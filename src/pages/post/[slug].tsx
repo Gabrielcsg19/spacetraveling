@@ -1,6 +1,7 @@
+/* eslint-disable react/no-danger */
 import { GetStaticPaths, GetStaticProps } from 'next';
 import Prismic from '@prismicio/client';
-
+import { v4 as uuid } from 'uuid';
 import Head from 'next/head';
 import { RichText } from 'prismic-dom';
 import { FiCalendar, FiUser, FiClock } from 'react-icons/fi';
@@ -10,7 +11,7 @@ import ptBR from 'date-fns/locale/pt-BR';
 import Header from '../../components/Header';
 import { getPrismicClient } from '../../services/prismic';
 
-// import commonStyles from '../../styles/common.module.scss';
+import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
 
 interface Post {
@@ -49,33 +50,43 @@ export default function Post({ post }: PostProps): JSX.Element {
       <Header />
 
       <main>
-        <article>
-          <div>
-            <img src={post.data.banner.url} alt="banner" />
+        <div
+          style={{
+            height: '400px',
+            backgroundImage: `url('${post.data.banner.url}')`,
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center top',
+          }}
+        />
+        <article className={styles.post}>
+          <h1>{post.data.title}</h1>
+          <div className={commonStyles.info}>
+            <time>
+              <FiCalendar />
+              {format(new Date(post.first_publication_date), 'dd MMM yyy', {
+                locale: ptBR,
+              })}
+            </time>
+            <span>
+              <FiUser />
+              {post.data.author}
+            </span>
+            <span>
+              <FiClock />4 min
+            </span>
           </div>
-
-          <div>
-            <h1>{post.data.title}</h1>
-            <div>
-              <time>
-                <FiCalendar />
-                {post.first_publication_date}
-              </time>
-              <span>
-                <FiUser />
-                {post.data.author}
-              </span>
-              <span>
-                <FiClock />4 min
-              </span>
+          {post.data.content.map(content => (
+            <div key={uuid()} className={styles.postContent}>
+              <h2>{content.heading}</h2>
+              <div
+                className={styles.body}
+                dangerouslySetInnerHTML={{
+                  __html: String(RichText.asHtml(content.body)),
+                }}
+              />
             </div>
-            {post.data.content.map(content => (
-              <div>
-                <h2>{content.heading}</h2>
-                <p>{content.body}</p>
-              </div>
-            ))}
-          </div>
+          ))}
         </article>
       </main>
     </>
@@ -102,23 +113,25 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   const prismic = getPrismicClient();
   const response = await prismic.getByUID('posts', String(params.slug), {});
 
+  // const wordAmount = response.data.content.reduce((ac, value) => {
+  //   const headingLetterAmount = value.heading.match(/\S+/g).length;
+  //   const bodyLetterAmount = RichText.asText(value.body).match(/\S+/g).length;
+  //   return ac + (headingLetterAmount + bodyLetterAmount);
+  // }, 0);
+
   const post = {
-    first_publication_date: format(
-      new Date(response.first_publication_date),
-      'dd MMM yyy',
-      {
-        locale: ptBR,
-      }
-    ),
+    first_publication_date: response.first_publication_date,
+    uid: response.uid,
     data: {
       title: response.data.title,
+      subtitle: response.data.subtitle,
       banner: {
         url: response.data.banner.url,
       },
       author: response.data.author,
       content: response.data.content.map(content => ({
         heading: content.heading,
-        body: RichText.asHtml(content.body),
+        body: content.body,
       })),
     },
   };
