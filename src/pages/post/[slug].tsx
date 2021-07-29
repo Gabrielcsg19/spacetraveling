@@ -74,14 +74,11 @@ export default function Post({
       </Head>
       <Header />
 
-      <main>
+      <main className={styles.postContainer}>
         <div
+          className={styles.banner}
           style={{
-            height: '400px',
             backgroundImage: `url('${post.data.banner.url}')`,
-            backgroundSize: 'contain',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center top',
           }}
         />
         <article className={styles.post}>
