@@ -12,3 +12,13 @@
     margin-right: 0.5rem;
   }
 }
+
+.exitPreviewButton {
+  display: block;
+  margin: 5.5rem 0 5rem;
+  padding: 1rem 0;
+  text-align: center;
+  background: var(--gray-50);
+  color: var(--gray-900);
+  border-radius: 4px;
+}

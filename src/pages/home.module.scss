@@ -6,6 +6,15 @@
   img {
     margin: 5rem 0 4rem;
   }
+
+  .morePostsButton {
+    border: none;
+    background: transparent;
+    color: var(--pink);
+    font-size: 1.12rem;
+    line-height: 1.37rem;
+    margin: 4rem 0 2rem;
+  }
 }
 
 .posts {
@@ -31,11 +40,3 @@
   }
 }
 
-.morePostsButton {
-  border: none;
-  background: transparent;
-  color: var(--pink);
-  font-size: 1.12rem;
-  line-height: 1.37rem;
-  margin: 4rem 0 5rem;
-}

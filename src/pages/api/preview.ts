@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable consistent-return */
 import { Document } from '@prismicio/client/types/documents';
-// import { Client } from '../../prismic-configuration';
+import { getPrismicClient } from '../../services/prismic';
 
 function linkResolver(doc: Document): string {
   if (doc.type === 'posts') {
@@ -11,7 +12,7 @@ function linkResolver(doc: Document): string {
 
 export default async (req, res): Promise<void> => {
   const { token: ref, documentId } = req.query;
-  const redirectUrl = await Client(req)
+  const redirectUrl = await getPrismicClient(req)
     .getPreviewResolver(ref, documentId)
     .resolve(linkResolver, '/');
 

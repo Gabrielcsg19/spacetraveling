@@ -3,6 +3,7 @@ import { GetStaticPaths, GetStaticProps } from 'next';
 import Prismic from '@prismicio/client';
 import { v4 as uuid } from 'uuid';
 import Head from 'next/head';
+import Link from 'next/link';
 import { RichText } from 'prismic-dom';
 import { FiCalendar, FiUser, FiClock } from 'react-icons/fi';
 import { useRouter } from 'next/router';
@@ -32,16 +33,39 @@ interface Post {
   };
 }
 
+type PrevNextPost = {
+  slug: string;
+  title: string;
+};
+
 interface PostProps {
   post: Post;
+  lastEditTime: string;
+  preview: boolean;
+  prevPost: PrevNextPost | null;
+  nextPost: PrevNextPost | null;
 }
 
-export default function Post({ post }: PostProps): JSX.Element {
+export default function Post({
+  post,
+  lastEditTime,
+  preview,
+  prevPost,
+  nextPost,
+}: PostProps): JSX.Element {
   const router = useRouter();
 
   if (router.isFallback) {
     return <h1>Carregando...</h1>;
   }
+
+  const wordAmount = post.data.content.reduce((ac, value) => {
+    const headingLetterAmount = value.heading.match(/\S+/g).length;
+    const bodyLetterAmount = RichText.asText(value.body).match(/\S+/g).length;
+    return ac + (headingLetterAmount + bodyLetterAmount);
+  }, 0);
+
+  const readingTime = Math.ceil(wordAmount / 200);
 
   return (
     <>
@@ -65,7 +89,7 @@ export default function Post({ post }: PostProps): JSX.Element {
           <div className={commonStyles.info}>
             <time>
               <FiCalendar />
-              {format(new Date(post.first_publication_date), 'dd MMM yyy', {
+              {format(new Date(post.first_publication_date), 'dd MMM yyyy', {
                 locale: ptBR,
               })}
             </time>
@@ -74,9 +98,21 @@ export default function Post({ post }: PostProps): JSX.Element {
               {post.data.author}
             </span>
             <span>
-              <FiClock />4 min
+              <FiClock />
+              {readingTime} min
             </span>
           </div>
+          {lastEditTime && lastEditTime !== post.first_publication_date && (
+            <span className={styles.lastEditTime}>
+              {format(
+                new Date(lastEditTime),
+                "'*editado em' dd MMM yyyy 'às' p",
+                {
+                  locale: ptBR,
+                }
+              )}
+            </span>
+          )}
           {post.data.content.map(content => (
             <div key={uuid()} className={styles.postContent}>
               <h2>{content.heading}</h2>
@@ -88,6 +124,41 @@ export default function Post({ post }: PostProps): JSX.Element {
               />
             </div>
           ))}
+          <div className={styles.divider} />
+
+          <div className={styles.prevNextPost}>
+            <div>
+              {prevPost && (
+                <>
+                  <h3>{prevPost.title}</h3>
+                  <Link href={`/post/${prevPost.slug}`}>
+                    <a>Post anterior</a>
+                  </Link>
+                </>
+              )}
+            </div>
+
+            <div>
+              {nextPost && (
+                <>
+                  <h3>{nextPost.title}</h3>
+                  <Link href={`/post/${nextPost.slug}`}>
+                    <a>Próximo post</a>
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+
+          {preview && (
+            <aside>
+              <Link href="/api/exit-preview">
+                <a className={commonStyles.exitPreviewButton}>
+                  Sair do modo preview
+                </a>
+              </Link>
+            </aside>
+          )}
         </article>
         <Comments />
       </main>
@@ -97,9 +168,12 @@ export default function Post({ post }: PostProps): JSX.Element {
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const prismic = getPrismicClient();
-  const posts = await prismic.query([
-    Prismic.predicates.at('document.type', 'posts'),
-  ]);
+  const posts = await prismic.query(
+    [Prismic.predicates.at('document.type', 'posts')],
+    {
+      orderings: '[document.first_publication_date desc]',
+    }
+  );
 
   const paths = posts.results.map(post => ({
     params: { slug: post.uid },
@@ -111,15 +185,15 @@ export const getStaticPaths: GetStaticPaths = async () => {
   };
 };
 
-export const getStaticProps: GetStaticProps = async ({ params }) => {
+export const getStaticProps: GetStaticProps = async ({
+  params,
+  preview = false,
+  previewData,
+}) => {
   const prismic = getPrismicClient();
-  const response = await prismic.getByUID('posts', String(params.slug), {});
-
-  // const wordAmount = response.data.content.reduce((ac, value) => {
-  //   const headingLetterAmount = value.heading.match(/\S+/g).length;
-  //   const bodyLetterAmount = RichText.asText(value.body).match(/\S+/g).length;
-  //   return ac + (headingLetterAmount + bodyLetterAmount);
-  // }, 0);
+  const response = await prismic.getByUID('posts', String(params.slug), {
+    ref: previewData?.ref ?? null,
+  });
 
   const post = {
     first_publication_date: response.first_publication_date,
@@ -138,9 +212,43 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     },
   };
 
+  const prevPostResponse = (
+    await prismic.query(Prismic.Predicates.at('document.type', 'posts'), {
+      pageSize: 1,
+      after: response?.id,
+      orderings: '[document.first_publication_date]',
+    })
+  ).results[0];
+
+  const prevPost = prevPostResponse
+    ? {
+        slug: prevPostResponse.uid,
+        title: prevPostResponse.data?.title,
+      }
+    : null;
+
+  const nextPostResponse = (
+    await prismic.query(Prismic.Predicates.at('document.type', 'posts'), {
+      pageSize: 1,
+      after: response?.id,
+      orderings: '[document.first_publication_date desc]',
+    })
+  ).results[0];
+
+  const nextPost = nextPostResponse
+    ? {
+        slug: nextPostResponse.uid,
+        title: nextPostResponse.data?.title,
+      }
+    : null;
+
   return {
     props: {
       post,
+      lastEditTime: response.last_publication_date,
+      preview,
+      prevPost,
+      nextPost,
     },
   };
 };

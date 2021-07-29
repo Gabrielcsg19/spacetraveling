@@ -10,6 +10,14 @@
     margin-bottom: 1.5rem;
   }
 
+  .lastEditTime {
+    display: block;
+    color: var(--gray-300);
+    margin-top: 1rem;
+    font-style: italic;
+    font-size: 0.87rem;
+  }
+
   .postContent {
     margin-top: 4rem;
 
@@ -25,6 +33,38 @@
     .body p {
       margin-bottom: 1rem;
       line-height: 1.5rem;
+    }
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--gray-100);
+    opacity: 0.1;
+    margin: 3.75rem 0 3rem;
+  }
+
+  .prevNextPost {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5rem;
+
+    div {
+      &:first-child {
+        display: inline-block;
+      }
+      &:last-child {
+        float: right;
+      }
+    }
+
+    h3 {
+      font-weight: normal;
+    }
+
+    a {
+      display: block;
+      margin-top: 0.5rem;
+      color: var(--pink);
     }
   }
 }
