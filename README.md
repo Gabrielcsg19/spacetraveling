@@ -9,7 +9,7 @@ Blog desenvolvido com __Next.js__ servido pelo headless CMS __Prismic__ e integr
 
 - [Node.js 12+](https://nodejs.org/en/download/)
 - [Yarn](https://classic.yarnpkg.com/en/docs/install/#windows-stable)
-- Conta no seguintes serviço (Tal possui plano gratuito):
+- Conta no seguinte serviço (Tal possui plano gratuito):
   - [Prismic](https://prismic.io/dashboard/signup)
 - Instalar o App do utterances no seu perfil do GitHub e seguir a configuração conforme link abaixo:
   - [utterances](https://utteranc.es/)
