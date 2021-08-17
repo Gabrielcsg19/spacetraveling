@@ -5,6 +5,9 @@
 ---
 Blog desenvolvido com __Next.js__ servido pelo headless CMS __Prismic__ e integração com comentários do __utterances__.
 
+## 🚀 Introdução
+Aplicação criada através do Ignite da Rocketseat com o objetivo de praticar os conhecimentos em *Next.js*, integração com o headless CMS *Prismic* para gerenciamento de conteúdo e com *utterances* para integração de comentários ao sistema.
+
 ## :clipboard: Pré-requisitos
 
 - [Node.js 12+](https://nodejs.org/en/download/)
